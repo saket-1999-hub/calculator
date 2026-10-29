@@ -5,12 +5,13 @@ const numBtns = document.querySelectorAll(".num-btn");
 const operatorBtn = document.querySelectorAll(".operation");
 const equalBtn = document.querySelector(".eual-btn");
 const allClearBtn = document.querySelector(".clear-btn");
+const deleteBtn = document.querySelector(".delete-btn");
+const dotBtn = document.querySelector(".dot-btn");
 
-// let operationClicked = false;
-// let result;
 let number1 = "";
 let number2 = "";
 let operator = "";
+let hasResult = false;
 
 // Basic maths funtions
 
@@ -49,81 +50,36 @@ function operate(operation, num1, num2) {
   }
 }
 
-// first number selection
-
-// function firstNumber(num) {
-//   return (number1 += num);
-// }
-
-// second number selectionn
-
-// function secondNumber(num) {
-//   return (number2 += num);
-// }
-
-// operation choices
-
-// function operationChoices(choice) {
-//   switch (choice) {
-//     case "+":
-//       return add;
-
-//     case "-":
-//       return subtract;
-
-//     case "×":
-//       return multiply;
-
-//     case "÷":
-//       return divide;
-
-//     default:
-//       console.log("Invalid");
-//   }
-// }
-
-// calculation function
-
-// function calculation(operation, number1, number2) {
-//   return operate(operation, number1, number2);
-// }
+function clear() {
+  number1 = "";
+  number2 = "";
+  operator = "";
+  hasResult = false;
+}
 
 function updateDisplay() {
   display.textContent = number1 + operator + number2;
 }
 
-// numBtns.forEach((btn) => {
-//   btn.addEventListener("click", () => {
-//     if (operationClicked) {
-//       const secondOperand = secondNumber(btn.textContent);
-//       updateDisplay(secondOperand);
-//     } else {
-//       const firstOperand = firstNumber(btn.textContent);
-//       updateDisplay(firstOperand);
-//     }
-//   });
-// });
-
-// operationBtns.forEach((btn) => {
-//   btn.addEventListener("click", () => {
-//     operation = operationChoices(btn.textContent);
-//     operationClicked = true;
-//   });
-// });
-
-// equalBtn.addEventListener("click", () => {
-//   // result = operate(operation, number1, number2);
-//   result = calculation(operation, number1, number2);
-//   updateDisplay(result);
-// });
-
 function calculation() {
   const result = operate(operator, Number(number1), Number(number2));
-  display.textContent = result;
+  if (typeof result !== "number") {
+    clear();
+    hasResult = true;
+    display.textContent = result;
+    return false;
+  }
+
+  number1 = String(Math.round(result * 100) / 100);
+  number2 = "";
+  return true;
 }
 
 numBtns.forEach((btn) => {
   btn.addEventListener("click", () => {
+    if (hasResult) {
+      clear();
+    }
     if (!operator) {
       number1 += btn.textContent;
     } else {
@@ -135,11 +91,65 @@ numBtns.forEach((btn) => {
 
 operatorBtn.forEach((btn) => {
   btn.addEventListener("click", () => {
+    if (!number1) {
+      return;
+    }
+    if (operator && number2) {
+      if (!calculation()) {
+        return;
+      }
+    }
     operator = btn.textContent;
+    hasResult = false;
     updateDisplay();
   });
 });
 
 equalBtn.addEventListener("click", () => {
-  calculation();
+  if (!operator || !number1 || !number2) {
+    return;
+  }
+  if (!calculation()) {
+    return;
+  }
+  operator = "";
+  hasResult = true;
+  updateDisplay();
+});
+
+allClearBtn.addEventListener("click", () => {
+  clear();
+  updateDisplay();
+});
+
+deleteBtn.addEventListener("click", () => {
+  if (hasResult) {
+    return;
+  }
+  if (number2) {
+    number2 = number2.slice(0, -1);
+  } else if (operator) {
+    operator = "";
+  } else {
+    number1 = number1.slice(0, -1);
+  }
+  updateDisplay();
+});
+
+dotBtn.addEventListener("click", () => {
+  if (hasResult) {
+    clear();
+  }
+  if (!operator) {
+    if (number1.includes(".")) {
+      return;
+    }
+    number1 = (number1 || "0") + ".";
+  } else {
+    if (number2.includes(".")) {
+      return;
+    }
+    number2 = (number2 || "0") + ".";
+  }
+  updateDisplay();
 });
